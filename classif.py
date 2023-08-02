@@ -5,6 +5,19 @@ import csv
 import os
 
 
+def line_exists_in_csv(csv_file, line):
+    # Check if the line exists in the CSV file
+    if not os.path.exists(csv_file):
+        return False
+
+    with open(csv_file, "r") as file:
+        csv_reader = csv.reader(file)
+        for row in csv_reader:
+            if len(row) > 0 and row[0] == line:
+                return True
+    return False
+
+
 def classify_lines_to_topic(csv_file, topic_keyword, threshold=0.5):
     # Read the CSV file into a pandas DataFrame with no header
     df = pd.read_csv(csv_file, header=None)
@@ -56,7 +69,7 @@ def append_keywords_to_csv(csv_file, new_csv_file, lines_list, is_topic_list):
     with open(new_csv_file, mode, newline="") as new_file:
         writer = csv.writer(new_file)
         for line, is_topic in zip(lines_list, is_topic_list):
-            if is_topic:
+            if is_topic and not line_exists_in_csv(new_csv_file, line):
                 writer.writerow([line])
 
 
@@ -64,7 +77,7 @@ if __name__ == "__main__":
     # Replace 'keywords.csv' with the path to your CSV file
     csv_file = "./navigations.csv"
     new_csv_file = "./keywords_topic.csv"
-    topic_keyword = "espionnage"
+    topic_keyword = "spy"
     probability_threshold = 0.5
 
     # Classify each line to the topic
@@ -77,8 +90,6 @@ if __name__ == "__main__":
     ):
         if is_topic:
             print(f"Line: '{line}' belongs to the topic.")
-        else:
-            print(f"Line: '{line}' does not belong to the topic.")
 
     # Append keywords that belong to the topic to the new CSV file
     append_keywords_to_csv(csv_file, new_csv_file, lines_list, is_topic_list)
